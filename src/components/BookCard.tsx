@@ -9,10 +9,40 @@ interface BookCardProps {
 export function BookCard({ book, onEdit, onDelete }: BookCardProps) {
   const formatBadgeClass = `format-badge format-${book.format.toLowerCase().replace('-', '')}`;
   
+  // Ensure vibes is always an array
+  const vibes = Array.isArray(book.vibes) ? book.vibes : [];
+  
   const getRatingColor = (rating: number): string => {
     if (rating >= 8) return 'rating-high';
     if (rating >= 6) return 'rating-medium';
     return 'rating-low';
+  };
+
+  const getVibeColorClass = (vibe: string): string => {
+    const vibeMap: Record<string, string> = {
+      'Bloody Mystery': 'vibe-bloody',
+      'Cozy Mystery': 'vibe-cozy',
+      'Thriller': 'vibe-thriller',
+      'Romance': 'vibe-romance',
+      'Sci-Fi': 'vibe-scifi',
+      'Fantasy': 'vibe-fantasy',
+      'Historical Fiction': 'vibe-historical',
+      'Dystopia': 'vibe-dystopia',
+      'Comedy': 'vibe-comedy',
+      'Drama': 'vibe-drama',
+      'Mystery': 'vibe-mystery',
+      'Horror': 'vibe-horror',
+      'Biography': 'vibe-biography',
+      'Self-Help': 'vibe-selfhelp',
+      'Philosophy': 'vibe-philosophy',
+    };
+    // Try exact match first, then case-insensitive match
+    if (vibeMap[vibe]) {
+      return vibeMap[vibe];
+    }
+    const lowerVibe = vibe.toLowerCase();
+    const matchedKey = Object.keys(vibeMap).find(key => key.toLowerCase() === lowerVibe);
+    return matchedKey ? vibeMap[matchedKey] : 'vibe-default';
   };
 
   const handleDelete = () => {
@@ -53,6 +83,11 @@ export function BookCard({ book, onEdit, onDelete }: BookCardProps) {
 
         <div className="book-badges">
           <span className={formatBadgeClass}>{book.format}</span>
+          {vibes.length > 0 && vibes.map((vibe, index) => (
+            <span key={index} className={`vibe-badge ${getVibeColorClass(vibe)}`}>
+              {vibe}
+            </span>
+          ))}
         </div>
 
         {book.notes && (

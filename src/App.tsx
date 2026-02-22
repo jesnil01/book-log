@@ -3,6 +3,7 @@ import { initDB, getAllBooks, addBook, updateBook, deleteBook } from './db/index
 import type { Book, BookInput } from './types/book'
 import { BookForm } from './components/BookForm'
 import { BookList } from './components/BookList'
+import { BookScrollList } from './components/BookScrollList'
 
 function App() {
   const [dbReady, setDbReady] = useState(false)
@@ -121,6 +122,12 @@ function App() {
                 + Add Book
               </button>
             </div>
+            <BookScrollList
+              books={books}
+              onEdit={handleEditBook}
+              onDelete={handleDeleteBook}
+              title="Your Reading Collection"
+            />
             <BookList
               books={books}
               onEdit={handleEditBook}

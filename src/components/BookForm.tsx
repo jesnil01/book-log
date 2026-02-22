@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Book, BookInput, Language, Format } from '../types/book';
+import { getAllUsedTags } from '../db/indexedDB';
+import { TagsInput } from './TagsInput';
 
 interface BookFormProps {
   book?: Book;
@@ -15,10 +17,12 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
     pages: 0,
     language: 'English',
     format: 'Physical',
+    vibes: [],
     rating: 5,
     notes: ''
   });
 
+  const [usedTags, setUsedTags] = useState<string[]>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof BookInput, string>>>({});
 
   useEffect(() => {
@@ -30,11 +34,19 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
         pages: book.pages,
         language: book.language,
         format: book.format,
+        vibes: book.vibes || [],
         rating: book.rating,
         notes: book.notes
       });
     }
   }, [book]);
+
+  useEffect(() => {
+    // Load used tags from database
+    getAllUsedTags()
+      .then(tags => setUsedTags(tags))
+      .catch(error => console.warn('Failed to load used tags:', error));
+  }, []);
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof BookInput, string>> = {};
@@ -72,6 +84,7 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
           pages: 0,
           language: 'English',
           format: 'Physical',
+          vibes: [],
           rating: 5,
           notes: ''
         });
@@ -95,6 +108,13 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
         return newErrors;
       });
     }
+  };
+
+  const handleTagsChange = (tags: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      vibes: tags
+    }));
   };
 
   return (
@@ -198,6 +218,16 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
           />
           {errors.rating && <span className="error-message">{errors.rating}</span>}
         </div>
+      </div>
+
+      <div className="form-group">
+        <label>Vibes</label>
+        <TagsInput
+          selectedTags={formData.vibes || []}
+          onTagsChange={handleTagsChange}
+          usedTags={usedTags}
+          placeholder="Type to add vibes (e.g., Thriller, Romance)..."
+        />
       </div>
 
       <div className="form-group">
