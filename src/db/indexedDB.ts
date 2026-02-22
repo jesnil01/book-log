@@ -1,7 +1,7 @@
 import type { Book, BookInput } from '../types/book';
 
 const DB_NAME = 'BookLogDB';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const STORE_NAME = 'books';
 const TAGS_STORE_NAME = 'usedTags';
 
@@ -183,6 +183,8 @@ export function getAllBooks(): Promise<Book[]> {
           return {
             ...book,
             vibes,
+            didNotFinish: book.didNotFinish !== undefined ? book.didNotFinish : false,
+            pagesRead: book.pagesRead !== undefined ? book.pagesRead : undefined,
             createdAt: new Date(book.createdAt),
             updatedAt: new Date(book.updatedAt)
           };
@@ -224,6 +226,8 @@ export function getBookById(id: string): Promise<Book | null> {
           resolve({
             ...book,
             vibes,
+            didNotFinish: book.didNotFinish !== undefined ? book.didNotFinish : false,
+            pagesRead: book.pagesRead !== undefined ? book.pagesRead : undefined,
             createdAt: new Date(book.createdAt),
             updatedAt: new Date(book.updatedAt)
           });

@@ -19,7 +19,9 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
     format: 'Physical',
     vibes: [],
     rating: 5,
-    notes: ''
+    notes: '',
+    didNotFinish: false,
+    pagesRead: undefined
   });
 
   const [usedTags, setUsedTags] = useState<string[]>([]);
@@ -36,7 +38,9 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
         format: book.format,
         vibes: book.vibes || [],
         rating: book.rating,
-        notes: book.notes
+        notes: book.notes,
+        didNotFinish: book.didNotFinish || false,
+        pagesRead: book.pagesRead
       });
     }
   }, [book]);
@@ -67,6 +71,16 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
       newErrors.rating = 'Rating must be between 1 and 10';
     }
 
+    if (formData.didNotFinish) {
+      if (formData.pagesRead === undefined || formData.pagesRead === null) {
+        newErrors.pagesRead = 'Pages read is required when "Did not finish" is checked';
+      } else if (formData.pagesRead < 0) {
+        newErrors.pagesRead = 'Pages read must be a positive number';
+      } else if (formData.pagesRead > formData.pages) {
+        newErrors.pagesRead = 'Pages read cannot exceed total pages';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,7 +100,9 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
           format: 'Physical',
           vibes: [],
           rating: 5,
-          notes: ''
+          notes: '',
+          didNotFinish: false,
+          pagesRead: undefined
         });
       }
     }
@@ -95,11 +111,30 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'pages' || name === 'rating' ? Number(value) : value
-    }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => {
+      const newData = { ...prev };
+      
+      if (type === 'checkbox') {
+        newData[name as keyof BookInput] = checked as any;
+        // Clear pagesRead when unchecking didNotFinish
+        if (name === 'didNotFinish' && !checked) {
+          newData.pagesRead = undefined;
+        }
+      } else if (name === 'pagesRead') {
+        // Handle empty string for pagesRead - set to undefined instead of 0
+        newData.pagesRead = value === '' ? undefined : Number(value);
+      } else if (name === 'pages' || name === 'rating') {
+        newData[name as keyof BookInput] = Number(value) as any;
+      } else {
+        newData[name as keyof BookInput] = value as any;
+      }
+      
+      return newData;
+    });
+    
     // Clear error when user starts typing
     if (errors[name as keyof BookInput]) {
       setErrors(prev => {
@@ -219,6 +254,36 @@ export function BookForm({ book, onSubmit, onCancel }: BookFormProps) {
           {errors.rating && <span className="error-message">{errors.rating}</span>}
         </div>
       </div>
+
+      <div className="form-group">
+        <label htmlFor="didNotFinish" className="checkbox-label">
+          <input
+            type="checkbox"
+            id="didNotFinish"
+            name="didNotFinish"
+            checked={formData.didNotFinish || false}
+            onChange={handleChange}
+          />
+          Did not finish
+        </label>
+      </div>
+
+      {formData.didNotFinish && (
+        <div className="form-group">
+          <label htmlFor="pagesRead">Pages Read</label>
+          <input
+            type="number"
+            id="pagesRead"
+            name="pagesRead"
+            value={formData.pagesRead ?? ''}
+            onChange={handleChange}
+            min="0"
+            max={formData.pages}
+            className={errors.pagesRead ? 'error' : ''}
+          />
+          {errors.pagesRead && <span className="error-message">{errors.pagesRead}</span>}
+        </div>
+      )}
 
       <div className="form-group">
         <label>Vibes</label>

@@ -31,6 +31,8 @@ export interface Book {
   vibes: string[]; // Array of vibes, can include predefined or custom ones
   rating: number; // 1-10
   notes: string;
+  didNotFinish?: boolean; // Whether the book was not finished
+  pagesRead?: number; // Number of pages read (only relevant if didNotFinish is true)
   createdAt: Date;
   updatedAt: Date;
 }

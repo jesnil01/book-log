@@ -73,7 +73,10 @@ export function BookCard({ book, onEdit, onDelete }: BookCardProps) {
           )}
           {book.pages > 0 && (
             <span className="meta-item">
-              <span className="meta-label">Pages:</span> {book.pages}
+              <span className="meta-label">Pages:</span>{' '}
+              {book.didNotFinish && book.pagesRead !== undefined
+                ? `${book.pagesRead}/${book.pages}`
+                : book.pages}
             </span>
           )}
           <span className="meta-item">
@@ -83,6 +86,9 @@ export function BookCard({ book, onEdit, onDelete }: BookCardProps) {
 
         <div className="book-badges">
           <span className={formatBadgeClass}>{book.format}</span>
+          {book.didNotFinish && (
+            <span className="vibe-badge vibe-default">Did not finish</span>
+          )}
           {vibes.length > 0 && vibes.map((vibe, index) => (
             <span key={index} className={`vibe-badge ${getVibeColorClass(vibe)}`}>
               {vibe}
